@@ -82,7 +82,7 @@ const installPackages = async (
   );
   for (let pkg of packages) {
     const name = typeof pkg === "string" ? pkg : pkg.name;
-    let command = `yay -Syu --noconfirm ${name}`;
+    let command = `sudo pacman -Syu --noconfirm ${name}`;
     console.log(`RUNNING: ${command}`);
 
     if (!dryRun) {
