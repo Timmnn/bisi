@@ -15,7 +15,15 @@ export const installPackages = async (
     const name = typeof pkg === "string" ? pkg : pkg.name;
 
     if (!dryRun) {
-      if (await isPackageInstalled(name)) continue;
+      console.log(`Checking if package '${name}' is installed`);
+      if (await isPackageInstalled(name)) {
+        console.log("Package already installed");
+        continue;
+      }
+
+      console.log("Package not installed. Installing...");
+
+      await installPackage(name);
 
       // Run post-install commands if applicable
       if (typeof pkg !== "string" && pkg.postInstall) {
