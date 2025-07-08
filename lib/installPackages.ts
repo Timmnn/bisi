@@ -20,6 +20,7 @@ export const installPackages = async (
       console.log(`Checking if package '${name}' is installed`);
 
       if (typeof pkg !== "string" && pkg.config_src && pkg.config_target) {
+        execSync(`rm -f ${pkg.config_target}`);
         execSync(
           `ln -s $(realpath ${pkg.config_src}) $(realpath ${pkg.config_target})`,
         );
@@ -68,7 +69,8 @@ export const installPackages = async (
 };
 
 const installPackage = async (packageName: string) => {
-  const command = `sudo pacman -Syu --noconfirm ${packageName}`;
+  const installer = packageName.startsWith("aur/") ? "yay" : "sudo pacman"
+  const command = `${installer} -Syu --noconfirm ${packageName}`;
   console.log(`RUNNING: ${command}`);
   const child = exec(command);
 
@@ -116,3 +118,5 @@ const isPackageInstalled = (packageName: string) => {
 
   return installed_packages.includes(packageName);
 };
+
+

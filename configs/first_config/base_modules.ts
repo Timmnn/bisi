@@ -5,6 +5,16 @@ export default [
     config_src: "../configs/first_config/neovim/",
     config_target: "~/.config/nvim",
   },
+  "extra/typescript-language-server",
+  "aur/1password",
+  {
+    name: "extra/kitty",
+    config_src: "../configs/first_config/kitty/",
+    config_target: "~/.config/kitty",
+
+  },
+  "extra/otf-firamono-nerd",
+  "aur/nodejs-emmet-ls",
   "extra/unzip",
   "extra/code",
   "extra/bat",
