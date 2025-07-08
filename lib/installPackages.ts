@@ -1,3 +1,4 @@
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { type Config } from "./main";
 import { exec } from "child_process";
 
@@ -87,20 +88,14 @@ const installPackage = async (packageName: string) => {
   });
 };
 
-const isPackageInstalled = async (packageName: string) => {
-  const command = `pacman -Q ${packageName} &> /dev/null`;
+const isPackageInstalled = (packageName: string) => {
+  const packages_file = "./installed_packages.json";
 
-  return new Promise((resolve) => {
-    exec(command, (error) => {
-      // If error is null, the command exited with 0, meaning the package is installed.
-      // Otherwise, an error (non-zero exit code) indicates it's not installed.
-      if (error) {
-        // console.log(`Package "${packageName}" not found: ${error.message}`); // For debugging
-        resolve(false);
-      } else {
-        // console.log(`Package "${packageName}" is installed.`); // For debugging
-        resolve(true);
-      }
-    });
-  });
+  if (!existsSync(packages_file)) writeFileSync(packages_file, "[]");
+
+  const installed_packages = JSON.parse(
+    readFileSync(packages_file).toString(),
+  ) as string[];
+
+  return installed_packages.includes(packageName);
 };
