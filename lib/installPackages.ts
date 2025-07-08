@@ -5,6 +5,7 @@ import { exec } from "child_process";
 export const installPackages = async (
   packages: Config["packages"],
   dryRun: boolean,
+  reinstall: string[],
 ) => {
   console.log(
     `Installing Packages: [${packages
@@ -17,7 +18,8 @@ export const installPackages = async (
 
     if (!dryRun) {
       console.log(`Checking if package '${name}' is installed`);
-      if (await isPackageInstalled(name)) {
+
+      if ((await isPackageInstalled(name)) && !reinstall.includes(name)) {
         console.log("Package already installed");
         continue;
       }

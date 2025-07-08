@@ -72,11 +72,15 @@ const installAurHelper = async (
   });
 };
 
-const main = async (inputFile: string, dryRun: boolean) => {
+const main = async (
+  inputFile: string,
+  dryRun: boolean,
+  reinstall: string[],
+) => {
   const config = await parseConfig(inputFile);
 
   await installAurHelper(config.aur_helper, dryRun);
-  await installPackages(config.packages, dryRun);
+  await installPackages(config.packages, dryRun, reinstall);
 };
 
 program
@@ -84,8 +88,11 @@ program
   .description("Bisi CLI")
   .argument("<input-file>")
   .option("--dry-run", "dry run")
+  .option("--reinstall [PACKAGES]", "reinstall")
   .action((file, options) => {
-    main(file, !!options.dryRun).catch((err) => {
+    const reinstall = options.reinstall?.replaceAll(" ", "")?.split(",") || [];
+
+    main(file, !!options.dryRun, reinstall).catch((err) => {
       console.error("Error:", err);
       process.exit(1);
     });

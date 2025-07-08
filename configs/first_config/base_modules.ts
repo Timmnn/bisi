@@ -1,8 +1,9 @@
 export default [
-  "extra/neovim",
+  { name: "extra/neovim", postInstall: `cp ./neovim/ ~/.config/nvim` },
   "extra/unzip",
   "extra/code",
   "extra/bat",
+  "extra/firefox",
   {
     name: "extra/git",
     postInstall: `git config --global user.name 'Timm Nicolaizik'; 
