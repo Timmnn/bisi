@@ -11,10 +11,10 @@ export default {
   aur_helper: "yay",
   packages: [
     {
-      name: "neovim",
+      name: "extra/neovim",
     },
     {
-      name: "unzip",
+      name: "extra/unzip",
     },
   ],
 } satisfies Config;
