@@ -80,16 +80,13 @@ const installPackages = async (
       .map((p) => (typeof p === "string" ? p : p.name))
       .join(", ")}]`,
   );
+  for (let pkg of packages) {
+    const name = typeof pkg === "string" ? pkg : pkg.name;
+    let command = `yay -Syu --noconfirm ${name}`;
+    console.log(`RUNNING: ${command}`);
 
-  if (!dryRun) {
-    for (let pkg of packages) {
-      const name = typeof pkg === "string" ? pkg : pkg.name;
-      if (await isArchPackageGroup(name)) {
-        execSync(`printf '\ny\n' | yay -S ${name}`);
-      } else {
-        execSync(`yes | yay -S ${name}`);
-      }
-
+    if (!dryRun) {
+      execSync(`yes | yay -S ${name}`);
       if (typeof pkg !== "string" && pkg.postInstall) {
         execSync(pkg.postInstall);
       }
