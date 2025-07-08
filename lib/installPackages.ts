@@ -15,9 +15,7 @@ export const installPackages = async (
     const name = typeof pkg === "string" ? pkg : pkg.name;
 
     if (!dryRun) {
-      if (!(await isPackageInstalled(name))) {
-        await installPackage(name);
-      }
+      if (await isPackageInstalled(name)) continue;
 
       // Run post-install commands if applicable
       if (typeof pkg !== "string" && pkg.postInstall) {
