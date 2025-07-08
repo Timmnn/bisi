@@ -19,6 +19,12 @@ export const installPackages = async (
     if (!dryRun) {
       console.log(`Checking if package '${name}' is installed`);
 
+      if (typeof pkg !== "string" && pkg.config_src && pkg.config_target) {
+        execSync(
+          `ln -s $(realpath ${pkg.config_src}) $(realpath ${pkg.config_target})`,
+        );
+      }
+
       if ((await isPackageInstalled(name)) && !reinstall.includes(name)) {
         console.log("Package already installed");
         continue;
@@ -27,12 +33,6 @@ export const installPackages = async (
       console.log("Package not installed. Installing...");
 
       await installPackage(name);
-
-      if (typeof pkg !== "string" && pkg.config_src && pkg.config_target) {
-        execSync(
-          `ln -s $(realpath ${pkg.config_src}) $(realpath ${pkg.config_target})`,
-        );
-      }
 
       // Run post-install commands if applicable
       if (typeof pkg !== "string" && pkg.postInstall) {
