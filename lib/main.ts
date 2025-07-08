@@ -38,7 +38,7 @@ const installAurHelper = async (
     const commands: {
       [key in Config["aur_helper"]]: string;
     } = {
-      yay: "pacman -S --needed git base-devel yay",
+      yay: "sudo pacman -S --needed git base-devel yay",
     };
 
     const command = commands[aurHelper];
