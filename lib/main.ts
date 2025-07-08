@@ -10,7 +10,7 @@ const ConfigSchema = z
       z.object({
         username: z.string(),
         password: z.string(),
-      })
+      }),
     ),
     aur_helper: z.enum(["yay"]),
     packages: z.array(
@@ -21,7 +21,7 @@ const ConfigSchema = z
           postInstall: z.string().optional(),
         }),
         z.string(),
-      ])
+      ]),
     ),
   })
   .strict();
@@ -50,13 +50,13 @@ const isArchPackageGroup = (name: string) => {
 
 const installAurHelper = async (
   aurHelper: Config["aur_helper"],
-  dryRun: boolean
+  dryRun: boolean,
 ) => {
   return new Promise<void>((resolve) => {
     const commands: {
       [key in Config["aur_helper"]]: string;
     } = {
-      yay: "sudo bash ./install_yay.sh",
+      yay: "bash ./install_yay.sh",
     };
 
     const command = commands[aurHelper];
@@ -73,12 +73,12 @@ const installAurHelper = async (
 
 const installPackages = async (
   packages: Config["packages"],
-  dryRun: boolean
+  dryRun: boolean,
 ) => {
   console.log(
     `Installing Packages: [${packages
       .map((p) => (typeof p === "string" ? p : p.name))
-      .join(", ")}]`
+      .join(", ")}]`,
   );
 
   if (!dryRun) {
