@@ -20,6 +20,8 @@ const ConfigSchema = z
           name: z.string(),
           groupInstall: z.enum(["all"]).optional(),
           postInstall: z.string().optional(),
+          config_src: z.string().optional(),
+          config_target: z.string().optional(),
         }),
         z.string(),
       ]),

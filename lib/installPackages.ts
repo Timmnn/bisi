@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { type Config } from "./main";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
 
 export const installPackages = async (
   packages: Config["packages"],
@@ -27,6 +27,12 @@ export const installPackages = async (
       console.log("Package not installed. Installing...");
 
       await installPackage(name);
+
+      if (typeof pkg !== "string" && pkg.config_src && pkg.config_target) {
+        execSync(
+          `ln -s $(realpath ${pkg.config_src}) $(realpath ${pkg.config_target})`,
+        );
+      }
 
       // Run post-install commands if applicable
       if (typeof pkg !== "string" && pkg.postInstall) {
