@@ -86,6 +86,15 @@ const installPackage = async (packageName: string) => {
       }
     });
   });
+
+  const packages_file = "./installed_packages.json";
+  const installed_packages = JSON.parse(
+    readFileSync(packages_file).toString(),
+  ) as string[];
+
+  installed_packages.push(packageName);
+
+  writeFileSync(packages_file, JSON.stringify(installed_packages));
 };
 
 const isPackageInstalled = (packageName: string) => {
