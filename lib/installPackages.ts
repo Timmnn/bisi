@@ -71,10 +71,10 @@ const installPackage = async (packageName: string) => {
   await new Promise<void>((resolve, reject) => {
     child.on("close", (code) => {
       if (code === 0) {
-        console.log(`Successfully installed ${name}`);
+        console.log(`Successfully installed ${packageName}`);
         resolve();
       } else {
-        console.error(`Error installing ${name}. Exit code: ${code}`);
+        console.error(`Error installing ${packageName}. Exit code: ${code}`);
         reject(new Error(`Command failed with code ${code}`));
       }
     });
