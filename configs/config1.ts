@@ -8,10 +8,13 @@ export default {
       password: env.timm_pw,
     },
   ],
-
+  aur_helper: "yay",
   packages: [
     {
       name: "neovim",
     },
+    {
+      name: "unzip",
+    },
   ],
-} as Config;
+} satisfies Config;

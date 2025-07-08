@@ -1,6 +1,7 @@
 import { program } from "commander";
 import { z } from "zod";
 import path from "path";
+import { execSync } from "child_process";
 import { pathToFileURL } from "url";
 
 const ConfigSchema = z
@@ -11,13 +12,14 @@ const ConfigSchema = z
         password: z.string(),
       }),
     ),
+    aur_helper: z.enum(["yay"]),
     packages: z.array(z.object({ name: z.string() })),
   })
   .strict();
 
 export type Config = z.infer<typeof ConfigSchema>;
 
-async function main(inputFile: string) {
+const parseConfig = async (inputFile: string): Promise<Config> => {
   const fullPath = path.resolve(inputFile);
   const fileUrl = pathToFileURL(fullPath).href;
 
@@ -25,15 +27,44 @@ async function main(inputFile: string) {
 
   const config = ConfigSchema.parse(imported.default);
 
-  console.log(config);
-}
+  return config;
+};
+
+const installAurHelper = async (
+  aurHelper: Config["aur_helper"],
+  dryRun: boolean,
+) => {
+  return new Promise<void>((resolve) => {
+    const commands: {
+      [key in Config["aur_helper"]]: string;
+    } = {
+      yay: "pacman -S --needed git base-devel yay",
+    };
+
+    const command = commands[aurHelper];
+
+    console.log(`RUNNING: '${command}'`);
+
+    if (!dryRun) {
+      execSync(command);
+      resolve();
+    }
+  });
+};
+
+const main = async (inputFile: string, dryRun: boolean) => {
+  const config = await parseConfig(inputFile);
+
+  await installAurHelper(config.aur_helper, dryRun);
+};
 
 program
   .version("0.0.1")
   .description("Bisi CLI")
   .argument("<input-file>")
-  .action((file) => {
-    main(file).catch((err) => {
+  .option("--dry-run", "dry run")
+  .action((file, options) => {
+    main(file, !!options.dryRun).catch((err) => {
       console.error("Error:", err);
       process.exit(1);
     });
