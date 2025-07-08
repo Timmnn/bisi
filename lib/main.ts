@@ -1,4 +1,5 @@
 import { program } from "commander";
+import { installPackages } from "./installPackages";
 import { z } from "zod";
 import path from "path";
 import { execSync } from "child_process";
@@ -56,7 +57,7 @@ const installAurHelper = async (
     const commands: {
       [key in Config["aur_helper"]]: string;
     } = {
-      yay: "bash ./install_yay.sh",
+      yay: "yes | bash ./install_yay.sh",
     };
 
     const command = commands[aurHelper];
@@ -69,29 +70,6 @@ const installAurHelper = async (
 
     resolve();
   });
-};
-
-const installPackages = async (
-  packages: Config["packages"],
-  dryRun: boolean,
-) => {
-  console.log(
-    `Installing Packages: [${packages
-      .map((p) => (typeof p === "string" ? p : p.name))
-      .join(", ")}]`,
-  );
-  for (let pkg of packages) {
-    const name = typeof pkg === "string" ? pkg : pkg.name;
-    let command = `sudo pacman -Syu --noconfirm ${name}`;
-    console.log(`RUNNING: ${command}`);
-
-    if (!dryRun) {
-      execSync(command);
-      if (typeof pkg !== "string" && pkg.postInstall) {
-        execSync(pkg.postInstall);
-      }
-    }
-  }
 };
 
 const main = async (inputFile: string, dryRun: boolean) => {

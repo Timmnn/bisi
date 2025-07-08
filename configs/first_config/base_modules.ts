@@ -2,6 +2,7 @@ export default [
   "extra/neovim",
   "extra/unzip",
   "extra/code",
+  "extra/bat",
   {
     name: "extra/git",
     postInstall: `git config --global user.name 'Timm Nicolaizik'; 
