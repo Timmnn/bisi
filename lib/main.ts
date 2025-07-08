@@ -86,7 +86,7 @@ const installPackages = async (
     console.log(`RUNNING: ${command}`);
 
     if (!dryRun) {
-      execSync(`yes | yay -S ${name}`);
+      execSync(command);
       if (typeof pkg !== "string" && pkg.postInstall) {
         execSync(pkg.postInstall);
       }
