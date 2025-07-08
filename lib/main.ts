@@ -10,10 +10,19 @@ const ConfigSchema = z
       z.object({
         username: z.string(),
         password: z.string(),
-      }),
+      })
     ),
     aur_helper: z.enum(["yay"]),
-    packages: z.array(z.object({ name: z.string() })),
+    packages: z.array(
+      z.union([
+        z.object({
+          name: z.string(),
+          groupInstall: z.enum(["all"]).optional(),
+          postInstall: z.string().optional(),
+        }),
+        z.string(),
+      ])
+    ),
   })
   .strict();
 
@@ -30,9 +39,18 @@ const parseConfig = async (inputFile: string): Promise<Config> => {
   return config;
 };
 
+const isArchPackageGroup = (name: string) => {
+  try {
+    const output = execSync(`pacman -Sg ${name}`);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 const installAurHelper = async (
   aurHelper: Config["aur_helper"],
-  dryRun: boolean,
+  dryRun: boolean
 ) => {
   return new Promise<void>((resolve) => {
     const commands: {
@@ -55,15 +73,26 @@ const installAurHelper = async (
 
 const installPackages = async (
   packages: Config["packages"],
-  dryRun: boolean,
+  dryRun: boolean
 ) => {
   console.log(
-    `Installing Packages: [${packages.map((p) => p.name).join(", ")}]`,
+    `Installing Packages: [${packages
+      .map((p) => (typeof p === "string" ? p : p.name))
+      .join(", ")}]`
   );
 
   if (!dryRun) {
     for (let pkg of packages) {
-      execSync(`yes | yay -S ${pkg.name}`);
+      const name = typeof pkg === "string" ? pkg : pkg.name;
+      if (await isArchPackageGroup(name)) {
+        execSync(`printf '\ny\n' | yay -S ${name}`);
+      } else {
+        execSync(`yes | yay -S ${name}`);
+      }
+
+      if (typeof pkg !== "string" && pkg.postInstall) {
+        execSync(pkg.postInstall);
+      }
     }
   }
 };
