@@ -38,7 +38,7 @@ const installAurHelper = async (
     const commands: {
       [key in Config["aur_helper"]]: string;
     } = {
-      yay: "sudo pacman -S --needed git base-devel yay",
+      yay: "sudo pacman -S --needed git base-devel;git clone https://aur.archlinux.org/yay-bin.git; cd yay-bin; makepkg -si",
     };
 
     const command = commands[aurHelper];
