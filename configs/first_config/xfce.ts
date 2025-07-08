@@ -16,7 +16,7 @@ export default [
   },
 
   {
-    name: "lightdm-gtk-greeter",
+    name: "extra/lightdm-gtk-greeter",
   },
 
   {
