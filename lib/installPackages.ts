@@ -13,35 +13,11 @@ export const installPackages = async (
 
   for (const pkg of packages) {
     const name = typeof pkg === "string" ? pkg : pkg.name;
-    const command = `sudo pacman -Syu --noconfirm ${name}`;
-    console.log(`RUNNING: ${command}`);
 
     if (!dryRun) {
-      // Execute the command asynchronously to capture stdout and stderr
-      const child = exec(command);
-
-      // Log stdout in green
-      child.stdout?.on("data", (data) => {
-        process.stdout.write(`\x1b[32m${data}\x1b[0m`);
-      });
-
-      // Log stderr in red
-      child.stderr?.on("data", (data) => {
-        process.stderr.write(`\x1b[31m${data}\x1b[0m`);
-      });
-
-      // Wait for the command to finish
-      await new Promise<void>((resolve, reject) => {
-        child.on("close", (code) => {
-          if (code === 0) {
-            console.log(`Successfully installed ${name}`);
-            resolve();
-          } else {
-            console.error(`Error installing ${name}. Exit code: ${code}`);
-            reject(new Error(`Command failed with code ${code}`));
-          }
-        });
-      });
+      if (!(await isPackageInstalled(name))) {
+        await installPackage(name);
+      }
 
       // Run post-install commands if applicable
       if (typeof pkg !== "string" && pkg.postInstall) {
@@ -74,4 +50,51 @@ export const installPackages = async (
       }
     }
   }
+};
+
+const installPackage = async (packageName: string) => {
+  const command = `sudo pacman -Syu --noconfirm ${packageName}`;
+  console.log(`RUNNING: ${command}`);
+  const child = exec(command);
+
+  // Log stdout in green
+  child.stdout?.on("data", (data) => {
+    process.stdout.write(`\x1b[32m${data}\x1b[0m`);
+  });
+
+  // Log stderr in red
+  child.stderr?.on("data", (data) => {
+    process.stderr.write(`\x1b[31m${data}\x1b[0m`);
+  });
+
+  // Wait for the command to finish
+  await new Promise<void>((resolve, reject) => {
+    child.on("close", (code) => {
+      if (code === 0) {
+        console.log(`Successfully installed ${name}`);
+        resolve();
+      } else {
+        console.error(`Error installing ${name}. Exit code: ${code}`);
+        reject(new Error(`Command failed with code ${code}`));
+      }
+    });
+  });
+};
+
+const isPackageInstalled = async (packageName: string) => {
+  const command = `pacman -Q ${packageName} &> /dev/null`;
+
+  return new Promise((resolve) => {
+    exec(command, (error) => {
+      // If error is null, the command exited with 0, meaning the package is installed.
+      // Otherwise, an error (non-zero exit code) indicates it's not installed.
+      if (error) {
+        // console.log(`Package "${packageName}" not found: ${error.message}`); // For debugging
+        resolve(false);
+      } else {
+        // console.log(`Package "${packageName}" is installed.`); // For debugging
+        resolve(true);
+      }
+    });
+  });
 };
