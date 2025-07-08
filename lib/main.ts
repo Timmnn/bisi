@@ -47,8 +47,9 @@ const installAurHelper = async (
 
     if (!dryRun) {
       execSync(command);
-      resolve();
     }
+
+    resolve();
   });
 };
 
@@ -56,8 +57,14 @@ const installPackages = async (
   packages: Config["packages"],
   dryRun: boolean,
 ) => {
-  for (let pkg of packages) {
-    execSync(`yes | yay -S ${pkg.name}`);
+  console.log(
+    `Installing Packages: [${packages.map((p) => p.name).join(", ")}]`,
+  );
+
+  if (!dryRun) {
+    for (let pkg of packages) {
+      execSync(`yes | yay -S ${pkg.name}`);
+    }
   }
 };
 
@@ -65,7 +72,6 @@ const main = async (inputFile: string, dryRun: boolean) => {
   const config = await parseConfig(inputFile);
 
   await installAurHelper(config.aur_helper, dryRun);
-
   await installPackages(config.packages, dryRun);
 };
 
