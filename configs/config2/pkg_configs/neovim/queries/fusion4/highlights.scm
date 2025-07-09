@@ -1,1 +1,0 @@
-/home/timm/Dev/tree-sitter-fusion4/queries/highlights.scm

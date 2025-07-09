@@ -45,5 +45,6 @@ export default [
   pkg("extra/qt6-tools"),
   pkg("aur/insomnia"),
   pkg("extra/dolphin"),
+  pkg("extra/tldr"),
   pkg("extra/firefox"),
 ] satisfies Config["packages"];
