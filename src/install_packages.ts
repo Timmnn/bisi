@@ -1,80 +1,87 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { type Config } from "./config_schema";
-import { exec, execSync } from "child_process";
-import { BashCommand } from "./exec";
+import { JsonConfig } from './config_schema'
+import { execSync } from 'child_process'
+import { BashCommand } from './exec'
 
 export const installPackages = async (
-  packages: Config["packages"],
+  packages: JsonConfig['packages'],
   dryRun: boolean,
-  reinstall: string[],
+  reinstall: string[]
 ) => {
   console.log(
-    `Installing Packages: [${packages.map(p => p.config.name).join(",\n")}]`,
-  );
+    `Installing Packages: [${packages.map((p) => p.name).join(',\n\t')}\n]`
+  )
   for (const pkg of packages) {
-    let config = pkg.config
-    const name = config.name;
+    const name = pkg.name
 
     if (!dryRun) {
-      console.log(`📦 Checking if package '${name}' is installed`);
+      console.log(`📦 Checking if package '${name}' is installed`)
 
-      if (config.config) {
-
-
-        execSync(`rm -f ${config.config.target}`);
+      if (pkg.config) {
+        execSync(`rm -f ${pkg.config.target}`)
         execSync(
-          `ln -s $(realpath ${config.config.src}) $(realpath ${config.config.target})`,
-        );
+          `ln -s $(realpath ${pkg.config.src}) $(realpath ${pkg.config.target})`
+        )
       }
 
-      if ((await isPackageInstalled(name)) && !reinstall.includes(name)) {
-        console.log("Package already installed");
-        continue;
+      if (packageIsGroup(name) && groupIsInstalled(name)) {
+        console.log('Group already installed.')
+        continue
       }
 
-      console.log("Package not installed. Installing...");
+      if (isPackageInstalled(name) && !reinstall.includes(name)) {
+        console.log('Package already installed')
+        continue
+      }
 
-      await installPackage(name);
+      console.log('Package not installed. Installing...')
+
+      await installPackage(name, pkg.exclude)
 
       // Run post-install commands if applicable
-      if (config.postInstall) {
-
-        const bash = new BashCommand(config.postInstall, dryRun)
+      if (pkg.postInstall) {
+        const bash = new BashCommand(pkg.postInstall, dryRun)
         bash.run()
       }
     }
   }
-};
+}
 
-const installPackage = async (packageName: string) => {
-  const installer = packageName.startsWith("aur/") ? "yay" : "sudo pacman"
-  const command = `${installer} -Syu --noconfirm ${packageName}`;
+const installPackage = async (packageName: string, exclude: string[]) => {
+  const installer = packageName.startsWith('aur/') ? 'yay' : 'sudo pacman'
 
+  // enter 'n' for each excluded package and enter 2 more times
+  const command = `printf '${exclude.map(() => 'n\\n')}\\n\\n' | ${installer} -Syu ${packageName} --ignore '${exclude.join(',')}'`
 
-  const bash = new BashCommand(command, false);
+  const bash = new BashCommand(command, false)
   bash.run()
-
-
-  const packages_file = "./installed_packages.json";
-  const installed_packages = JSON.parse(
-    readFileSync(packages_file).toString(),
-  ) as string[];
-
-  installed_packages.push(packageName);
-
-  writeFileSync(packages_file, JSON.stringify(installed_packages));
-};
+}
 
 const isPackageInstalled = (packageName: string) => {
-  const packages_file = "./installed_packages.json";
+  const name = packageName.includes('/')
+    ? packageName.split('/')[1]
+    : packageName
 
-  if (!existsSync(packages_file)) writeFileSync(packages_file, "[]");
+  const bash = new BashCommand(`pacman -Q ${name}`, false)
+  const output = bash.run()
 
-  const installed_packages = JSON.parse(
-    readFileSync(packages_file).toString(),
-  ) as string[];
+  return !output.stderr.includes('was not found')
+}
 
-  return installed_packages.includes(packageName);
-};
+const packageIsGroup = (packageName: string) => {
+  const bash = new BashCommand(`pacman -Sg ${packageName}`, false)
+  const output = bash.run()
 
+  console.log('XXXX', packageName, output.stdout.includes(packageName))
 
+  return output.stdout.includes(packageName)
+}
+
+const groupIsInstalled = (groupName: string) => {
+  const bash = new BashCommand(
+    `pacman -Sg ${groupName} | awk '{print $2}' | xargs pacman -Q`,
+    false
+  )
+  const output = bash.run()
+
+  return output.status === 0
+}
