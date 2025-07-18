@@ -1,0 +1,1 @@
+{"dependencies":[["vagrant-mutate",["= 1.2.0"]]],"checksum":"063e89f59b4045b0c628f6acc3af682ea273547647d791e91943a5ca84423686","vagrant_version":"2.4.7"}

@@ -1,0 +1,8 @@
+#!/usr/bin/env /usr/bin/bash
+
+if [ "$1" = "cli" ]; then
+	./.venv/bin/python -m cli.main "${@:2}"
+elif [ "$1" = "tui" ]; then
+	./.venv/bin/python -m tui.main
+fi
+
