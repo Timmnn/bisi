@@ -1,42 +1,50 @@
 import os
-import re
-from lib.json_diff import json_diff
+from lib.config_parser import Config
 from lib.bash import BashCommand
 import json
 
+from lib.installed_packages import get_installed_packages
 
-def apply(config: dict):
-    # Base config
-    active_config = {"packages": {}}
 
-    if os.path.exists("active_config.json"):
-        with open("active_config.json") as f:
-            active_config = json.load(f)
+def apply(config: Config, config_path: str):
+    active_config = Config({"version": 1, "packages": []})
 
-    config_diff = json_diff(active_config, config)
-    print(active_config)
+    if os.path.exists(config_path + "active_config.json"):
+        with open(config_path + "active_config.json") as f:
+            active_config = Config(json.load(f))
 
-    print(config)
+    config_diff = config.diff(active_config)
 
-    print(config_diff)
+    print(f"Found {len(config_diff.added_packages)} new packages.")
 
-    if "added" in config_diff:
-        for added_package in [
-            k
-            for k in config_diff["added"]
-            if re.match(r"^\$\.packages\.[a-z]+$", k["path"])
-        ]:
+    installed_packages = get_installed_packages()
 
-            name = added_package["path"].split(".")[-1]
-            print(added_package, name)
-            repo = added_package["value"]["repository"]
+    for added_package in config_diff.added_packages:
+        if next(x for x in installed_packages if x.name == added_package.name):
+            continue
 
-            cmd = BashCommand(
-                f"sudo pacman -S {repo}/{name} --noconfirm",
-                f"Do you want to install {repo}/{name}",
-            )
+        repo = added_package.repository
+        name = added_package.name
 
-            cmd.run()
+        cmd = BashCommand(
+            f"sudo pacman -S {repo}/{name} --noconfirm",
+            f"Do you want to install {repo}/{name}",
+        )
 
-        with open("active_config.json", "w") as f:
-            f.write(json.dumps(config))
+        cmd.run()
+
+    print(f"Found {len(config_diff.removed_packages)} removed packages")
+
+    for removed_package in config_diff.removed_packages:
+        repo = removed_package.repository
+        name = removed_package.name
+
+        cmd = BashCommand(
+            f"sudo pacman -R {name} --noconfirm",
+            f"Do you want to remove {repo}/{name}",
+        )
+
+        cmd.run()
+
+    with open(config_path + "active_config.json", "w") as f:
+        f.write(json.dumps(config.to_dict()))

@@ -1,0 +1,22 @@
+{
+  "name": "backend",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "scripts": {
+    "dev": "bun run index.ts --watch"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@trpc/client": "^11.4.3",
+    "@trpc/server": "^11.4.3",
+    "fastify": "^5.4.0",
+    "zod": "^4.0.5"
+  }
+}
